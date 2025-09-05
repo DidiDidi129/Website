@@ -1824,3 +1824,20 @@ input, select, textarea {
 			gap: 30px;
 			}
 		}
+
+.wave-text span {
+    display: inline-block;
+    font-size: 4rem;
+    animation: wave 2s ease-in-out infinite;
+    animation-delay: calc(0.1s * (var(--i)));
+}
+
+
+@keyframes wave {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
