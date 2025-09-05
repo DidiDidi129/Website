@@ -6,6 +6,17 @@
 -->
 <html>
 	<head>
+		<script>
+			const path = window.location.pathname;       // e.g., "/moderation"
+			const query = window.location.search;       // e.g., "?user=123"
+
+			// Only redirect if we're not already on the homepage with a fragment
+			if (path !== '/' && !path.startsWith('/#')) {
+				// Redirect to homepage with fragment + original query string
+				window.location.replace('/#' + path.slice(1) + query);
+			}
+		</script>
+
 		<title>DidiDidi129</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
