@@ -1827,7 +1827,7 @@ input, select, textarea {
 
 .wave-text span {
     display: inline-block;
-    font-size: 4rem;
+    font-size: 2.6rem;
     animation: wave 2s ease-in-out infinite;
     animation-delay: calc(0.1s * (var(--i)));
 }
