@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hiragana Mastery Quiz Made by jordi, Damola - Scroll Enabled</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      background-image: radial-gradient(circle at 20% 20%, #1f1f1f 2px, transparent 3px),
+                        radial-gradient(circle at 80% 80%, #1f1f1f 2px, transparent 3px);
+      background-size: 40px 40px;
+      color: #e0e0e0;
+      overflow-y: auto;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      scroll-behavior: smooth;
+      user-select: none;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 20px 0 12px 0;
+      color: #ffcc00;
+      font-weight: 900;
+      font-size: 2.2rem;
+      text-align: center;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    #row-select, #difficulty-overlay {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      width: 90vw;
+      max-width: 680px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    .row-btn, .difficulty-btn, #confirm-rows {
+      background-color: #333;
+      color: #eee;
+      border: none;
+      padding: 14px 22px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease-in-out;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .row-btn:hover, .difficulty-btn:hover, #confirm-rows:hover {
+      background-color: #ffcc00;
+      color: #121212;
+    }
+    .row-btn.selected {
+      background-color: #ffcc00;
+      color: #121212;
+    }
+    #confirm-rows {
+      margin-top: 10px;
+      background-color: #555;
+      flex-shrink: 0;
+    }
+    #difficulty-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(18,18,18,0.96);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+    }
+    #quiz-container {
+      width: 90vw;
+      max-width: 700px;
+      padding: 0 0 40px 0;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      user-select: none;
+    }
+    .question-block {
+      background: rgba(32,32,32,0.9);
+      border-radius: 18px;
+      box-shadow: 0 0 40px rgba(255,204,0,0.3);
+      padding: 30px 25px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: slideInUp 0.3s ease forwards;
+    }
+    @keyframes slideInUp {
+      0% {opacity: 0; transform: translateY(20px);}
+      100% {opacity: 1; transform: translateY(0);}
+    }
+    .question-char {
+      font-size: 5rem;
+      font-weight: 900;
+      color: #ffd700;
+      margin-bottom: 24px;
+    }
+    .options {
+      width: 100%;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+    button.option-btn {
+      background-color: #222;
+      border-radius: 12px;
+      padding: 20px 0;
+      font-size: 2.3rem;
+      color: #eee;
+      font-weight: 900;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      user-select: none;
+    }
+    button.option-btn.correct {
+      background-color: #00c853;
+      border-color: #00e676;
+    }
+    button.option-btn.incorrect {
+      background-color: #d50000;
+      border-color: #ff1744;
+    }
+    .feedback {
+      margin-top: 14px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      height: 20px;
+      color: #ffcc00;
+      user-select: none;
+    }
+    .timer-bar-container {
+      width: 100%;
+      height: 10px;
+      background: #333;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .timer-bar {
+      height: 100%;
+      background-color: #ff6f00;
+      transition: width 0.1s linear;
+      width: 100%;
+    }
+    #streak-container {
+      position: fixed;
+      top: 8px;
+      right: 16px;
+      background: rgba(255, 204, 0, 0.85);
+      color: #121212;
+      font-weight: 800;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 1.15rem;
+      user-select: none;
+      z-index: 9999;
+    }
+    #difficulty-indicator {
+      position: fixed;
+      top: 8px;
+      left: 16px;
+      background: rgba(255, 204, 0, 0.85);
+      color: #121212;
+      font-weight: 800;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 1.15rem;
+      user-select: none;
+      z-index: 9999;
+    }
+    #back-home-btn {
+      margin: 10px auto 40px auto;
+      background-color: #444;
+      color: #ffcc00;
+      padding: 12px 28px;
+      font-size: 1.2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 800;
+      border: none;
+      width: fit-content;
+      user-select: none;
+      transition: background-color 0.25s ease;
+    }
+    #back-home-btn:hover {
+      background-color: #ffcc00;
+      color: #121212;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hiragana Mastery by Jordi and Damola</h1>
+
+  <div id="row-select">
+    <button class="row-btn" data-row="a">A</button>
+    <button class="row-btn" data-row="k">K</button>
+    <button class="row-btn" data-row="s">S</button>
+    <button class="row-btn" data-row="t">T</button>
+    <button class="row-btn" data-row="n">N</button>
+    <button class="row-btn" data-row="h">H</button>
+    <button class="row-btn" data-row="m">M</button>
+    <button class="row-btn" data-row="y">Y</button>
+    <button class="row-btn" data-row="r">R</button>
+    <button class="row-btn" data-row="w">W</button>
+  </div>
+  <button id="confirm-rows">Confirm Selection</button>
+
+  <div id="difficulty-modal">
+    <h1>Select Difficulty</h1>
+    <div id="difficulty-overlay">
+      <button class="difficulty-btn" data-difficulty="easy">Easy</button>
+      <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+      <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+      <button class="difficulty-btn" data-difficulty="sensei">Sensei</button>
+    </div>
+  </div>
+
+  <div id="quiz-container"></div>
+
+  <div id="streak-container">Streak: 0 | Best: 0</div>
+  <div id="difficulty-indicator">Difficulty: Easy</div>
+
+  <button id="back-home-btn" style="display:none;">Back to Home</button>
+
+<script>
+  // Elements
+  const rowButtons = document.querySelectorAll(".row-btn");
+  const difficultyModal = document.getElementById("difficulty-modal");
+  const confirmRows = document.getElementById("confirm-rows");
+  const difficultyButtons = document.querySelectorAll(".difficulty-btn");
+  const quizContainer = document.getElementById("quiz-container");
+  const streakContainer = document.getElementById("streak-container");
+  const difficultyIndicator = document.getElementById("difficulty-indicator");
+  const backHomeBtn = document.getElementById("back-home-btn");
+
+  // Data
+  const hiraganaMap = {
+    a: [["あ", "a"], ["い", "i"], ["う", "u"], ["え", "e"], ["お", "o"]],
+    k: [["か", "ka"], ["き", "ki"], ["く", "ku"], ["け", "ke"], ["こ", "ko"]],
+    s: [["さ", "sa"], ["し", "shi"], ["す", "su"], ["せ", "se"], ["そ", "so"]],
+    t: [["た", "ta"], ["ち", "chi"], ["つ", "tsu"], ["て", "te"], ["と", "to"]],
+    n: [["な", "na"], ["に", "ni"], ["ぬ", "nu"], ["ね", "ne"], ["の", "no"]],
+    h: [["は", "ha"], ["ひ", "hi"], ["ふ", "fu"], ["へ", "he"], ["ほ", "ho"]],
+    m: [["ま", "ma"], ["み", "mi"], ["む", "mu"], ["め", "me"], ["も", "mo"]],
+    y: [["や", "ya"], ["ゆ", "yu"], ["よ", "yo"]],
+    r: [["ら", "ra"], ["り", "ri"], ["る", "ru"], ["れ", "re"], ["ろ", "ro"]],
+    w: [["わ", "wa"], ["を", "wo"], ["ん", "n"]],
+  };
+
+  let selectedRows = new Set();
+  let currentDifficulty = "easy";
+  let streak = 0, bestStreak = 0;
+  let allPairs = [];
+  let currentQuestion = null;
+  let timerInterval = null;
+  let timeLimit = 7;
+  let questionCount = 0;
+  let answeredThisQuestion = false;
+
+  // Row selection
+  rowButtons.forEach(btn => {
+    btn.onclick = () => {
+      const row = btn.dataset.row;
+      if (selectedRows.has(row)) {
+        selectedRows.delete(row);
+        btn.classList.remove("selected");
+      } else {
+        selectedRows.add(row);
+        btn.classList.add("selected");
+      }
+    };
+  });
+
+  // Confirm rows, show difficulty modal
+  confirmRows.onclick = () => {
+    if (selectedRows.size === 0) {
+      alert("Select at least one row.");
+      return;
+    }
+    difficultyModal.style.display = "flex";
+    confirmRows.style.display = "none";
+    rowButtons.forEach(btn => btn.disabled = true);
+  };
+
+  // Difficulty selection
+  difficultyButtons.forEach(btn => {
+    btn.onclick = () => {
+      currentDifficulty = btn.dataset.difficulty;
+      difficultyModal.style.display = "none";
+      difficultyIndicator.textContent = `Difficulty: ${capitalize(currentDifficulty)}`;
+      startGame();
+    };
+  });
+
+  // Back to home button
+  backHomeBtn.onclick = () => {
+    location.reload();
+  };
+
+  function startGame() {
+    allPairs = Array.from(selectedRows).flatMap(row => hiraganaMap[row] || []);
+    streak = 0;
+    bestStreak = 0;
+    streakContainer.textContent = `Streak: 0 | Best: 0`;
+    backHomeBtn.style.display = "inline-block";
+    nextQuestion();
+  }
+
+  // Create and push a new question block into the container
+  function nextQuestion() {
+    answeredThisQuestion = false;
+    questionCount++;
+
+    currentQuestion = allPairs[Math.floor(Math.random() * allPairs.length)];
+    let options = [currentQuestion[1]];
+
+    while (options.length < 4) {
+      const candidate = allPairs[Math.floor(Math.random() * allPairs.length)][1];
+      if (!options.includes(candidate)) options.push(candidate);
+    }
+    shuffleArray(options);
+
+    // Build question block DOM
+    const qBlock = document.createElement("div");
+    qBlock.className = "question-block";
+    qBlock.id = "q-" + questionCount;
+
+    const qChar = document.createElement("div");
+    qChar.className = "question-char";
+    qChar.textContent = currentQuestion[0];
+
+    const optionsDiv = document.createElement("div");
+    optionsDiv.className = "options";
+
+    const feedback = document.createElement("div");
+    feedback.className = "feedback";
+
+    // Timer bar container
+    const timerBarContainer = document.createElement("div");
+    timerBarContainer.className = "timer-bar-container";
+    const timerBar = document.createElement("div");
+    timerBar.className = "timer-bar";
+    timerBar.style.width = "100%";
+    timerBarContainer.appendChild(timerBar);
+
+    options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.textContent = opt;
+      btn.onclick = () => handleAnswer(btn, opt, qBlock, timerBar, feedback);
+      optionsDiv.appendChild(btn);
+    });
+
+    qBlock.appendChild(qChar);
+    qBlock.appendChild(optionsDiv);
+    qBlock.appendChild(timerBarContainer);
+    qBlock.appendChild(feedback);
+
+    quizContainer.appendChild(qBlock);
+    scrollToBottom();
+
+    startTimer(timerBar, qBlock, feedback);
+  }
+
+  function handleAnswer(button, answer, questionBlock, timerBar, feedback) {
+    if (answeredThisQuestion) return;
+    answeredThisQuestion = true;
+    clearInterval(timerInterval);
+
+    // Disable all option buttons in this block
+    const buttons = questionBlock.querySelectorAll(".option-btn");
+    buttons.forEach(b => b.disabled = true);
+
+    if (answer === currentQuestion[1]) {
+      streak++;
+      bestStreak = Math.max(bestStreak, streak);
+      button.classList.add("correct");
+      feedback.textContent = "Correct!";
+      feedback.style.color = "#00c853";
+    } else {
+      streak = 0;
+      button.classList.add("incorrect");
+      feedback.textContent = `Wrong! Correct: ${currentQuestion[1]}`;
+      feedback.style.color = "#d50000";
+      // Highlight correct answer
+      buttons.forEach(b => {
+        if (b.textContent === currentQuestion[1]) b.classList.add("correct");
+      });
+    }
+    streakContainer.textContent = `Streak: ${streak} | Best: ${bestStreak}`;
+
+    // Small delay before next question
+    setTimeout(() => nextQuestion(), 1000);
+  }
+
+  function startTimer(timerBar, questionBlock, feedback) {
+    const difficultyTime = {
+      easy: 10,
+      medium: 7,
+      hard: 5,
+      sensei: 3
+    };
+    timeLimit = difficultyTime[currentDifficulty] || 7;
+    let timeLeft = timeLimit;
+    timerBar.style.width = "100%";
+
+    timerInterval = setInterval(() => {
+      timeLeft -= 0.1;
+      if (timeLeft < 0) timeLeft = 0;
+      timerBar.style.width = `${(timeLeft / timeLimit) * 100}%`;
+
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        if (!answeredThisQuestion) {
+          answeredThisQuestion = true;
+          // Disable buttons on timeout
+          const buttons = questionBlock.querySelectorAll(".option-btn");
+          buttons.forEach(b => b.disabled = true);
+          // Show correct answer
+          buttons.forEach(b => {
+            if (b.textContent === currentQuestion[1]) b.classList.add("correct");
+          });
+          feedback.textContent = `Time's up! Correct: ${currentQuestion[1]}`;
+          feedback.style.color = "#d50000";
+          streak = 0;
+          streakContainer.textContent = `Streak: ${streak} | Best: ${bestStreak}`;
+
+          setTimeout(() => nextQuestion(), 1500);
+        }
+      }
+    }, 100);
+  }
+
+  // Utility: Shuffle array inplace
+  // jordi, damolas work u stealers this is ours dont rob us
+  // jordi, damolas work u stealers this is ours dont rob us
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  // Scroll container to bottom to reveal new question
+  // jordi, damolas work u stealers this is ours dont rob us
+  function scrollToBottom() {
+    // Smooth scroll the window or container to bottom
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: "smooth"
+    });
+  }
+
+  // Capitalize helper
+  // jordi, damolas work u stealers this is ours dont rob us
+  function capitalize(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+</script>
+
+</body>
+</html>
